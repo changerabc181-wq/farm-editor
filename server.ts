@@ -31,6 +31,23 @@ async function startServer() {
   });
 
   // GitHub Proxy API
+  app.get("/api/github/tree", async (req, res) => {
+    try {
+      const response = await fetch("https://api.github.com/repos/changerabc181-wq/farm/git/trees/main?recursive=1");
+      if (!response.ok) {
+        return res.status(response.status).json({ error: "Failed to fetch tree from GitHub" });
+      }
+      const data = await response.json();
+      const images = data.tree
+        .filter((t: any) => t.path.endsWith('.png'))
+        .map((t: any) => `https://raw.githubusercontent.com/changerabc181-wq/farm/main/${t.path}`);
+      res.json(images);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/github/data/:file", async (req, res) => {
     try {
       const response = await fetch(`https://raw.githubusercontent.com/changerabc181-wq/farm/main/data/${req.params.file}.json`);
